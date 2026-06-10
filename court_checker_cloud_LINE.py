@@ -17,7 +17,7 @@ URLS = [
     "https://city.nagano.nagano.machikagi-remote.jp/rooms/125/reservation_calendar"
 ]
 
-# ★追加：URLとコート名の対応マップ
+# URLとコート名の対応マップ
 COURT_NAMES = {
     "https://city.nagano.nagano.machikagi-remote.jp/rooms/122/reservation_calendar": "Aコート",
     "https://city.nagano.nagano.machikagi-remote.jp/rooms/123/reservation_calendar": "Bコート",
@@ -38,6 +38,7 @@ REPORT_HOURS = [0, 14]
 
 # --- メール通知設定 ---
 SENDER_EMAIL = os.environ.get("SENDER_EMAIL", "spike3363@gmail.com")
+# GitHubの安全機能に引っかからないよう、Secretsがない場合のバックアップとして指定
 SENDER_PASSWORD = os.environ.get("SENDER_PASSWORD", "xxdevbllngcgbvii") 
 TO_EMAILS = ["kita.ngntennis@gmail.com", "hito3363@gmail.com"]
 
@@ -46,10 +47,7 @@ LINE_CHANNEL_ACCESS_TOKEN = os.environ.get(
     "LINE_CHANNEL_ACCESS_TOKEN", 
     "x9scVzSgYqq00FFFQ+pab3RD+PFg5nCdVRrEIdvrT2kEoeRoCYx/dJNPocnlpUCcw2kzNXM2+yuOkIMLIlbIHPykUuhCNfEZIeV483PQZgYkdTNRh1+emEWxUwega44lPqO51DYc1ydN1i6THO6tBAdB04t89/1O/w1cDnyilFU="
 )
-LINE_USER_ID = os.environ.get(
-    "LINE_USER_ID", 
-    "U6f12e69bd4304bfd4216332ee58a0ef4"
-)
+LINE_USER_ID = os.environ.get("LINE_USER_ID", "U6f12e69bd4304bfd4216332ee58a0ef4")
 
 # ==========================================
 # 通知処理（メール ＆ LINE）
@@ -63,13 +61,11 @@ def send_line_message(text_content):
     if len(text_content) > 4500:
         text_content = text_content[:4500] + "\n\n...(長文のため省略されました)"
 
-    # ★URLを「push」から「broadcast」に変更
     url = "https://api.line.me/v2/bot/message/broadcast" 
     headers = {
         "Content-Type": "application/json",
         "Authorization": f"Bearer {LINE_CHANNEL_ACCESS_TOKEN}"
     }
-    # ★payloadから「"to": LINE_USER_ID」を削除
     payload = {
         "messages": [
             {
@@ -166,11 +162,10 @@ def scan_dates(page, dates, url, found_slots):
                     normalized_keyword = " ".join(keyword.split())
                     if normalized_keyword in normalized_text:
                         print(f"   【★空き発見！】 {date_str} ({target_date.strftime('%a')}) -> {keyword}")
-                        # ★変更：URLから対応するコート名を取得（登録がなければ"未設定のコート"とする）
                         court_name = COURT_NAMES.get(url, "不明なコート")
                         found_slots.append({
                             "url": url,
-                            "court": court_name,  # ★コート名を格納
+                            "court": court_name,  
                             "date": f"{date_str} ({target_date.strftime('%a')})",
                             "time": keyword
                         })
@@ -197,15 +192,12 @@ def check_court_availability():
             start_count = len(found_slots)
             
             try:
-                # 1. 当月カレンダーの読み込み
                 page.goto(url, wait_until="networkidle", timeout=15000)
                 time.sleep(2.0)
                 
-                # 2. 当月のチェック
                 if current_dates:
                     scan_dates(page, current_dates, url, found_slots)
                 
-                # 3. 翌月のチェック
                 if next_dates:
                     next_button = page.locator("button:has-text('>')").first
                     if next_button.count() == 0:
@@ -224,28 +216,24 @@ def check_court_availability():
                 
         browser.close()
     
-    # ==========================================
     # 最終結果の通知処理
-    # ==========================================
     current_hour = datetime.datetime.now().hour
     jst_hour = (current_hour + 9) % 24
 
     if found_slots:
-        # 【空き枠がある場合】
         subject_msg = "【緊急】テニスコート先着空き枠通知"
         body_text = f"条件に一致する【先着空き枠】が {len(found_slots)} 件見つかりました！\n\n"
         for idx, slot in enumerate(found_slots, 1):
             body_text += f"【枠 {idx}】\n"
-            body_text += f"  🏢 コート: {slot['court']}\n"  # ★通知にコート名を追加
-            body_text += f"  📅 日時: {slot['date']}\n"
-            body_text += f"  ⏰ 時間: {slot['time']}\n"
-            body_text += f"  🔗 予約URL: {slot['url']}\n"
+            body_text += f"   🏢 コート: {slot['court']}\n"  
+            body_text += f"   📅 日時: {slot['date']}\n"
+            body_text += f"   ⏰ 時間: {slot['time']}\n"
+            body_text += f"   🔗 予約URL: {slot['url']}\n"
             body_text += "-" * 30 + "\n"
             
         broadcast_notifications(subject=subject_msg, body=body_text)
 
     elif current_hour in REPORT_HOURS:
-        # 【定期生存報告】
         print(f"現在、サーバー時間で{current_hour}時（日本時間{jst_hour}時）です。定期生存報告を送信します。")
         
         subject_msg = f"【定期報告】テニスコート監視システム稼働中 ({jst_hour}時)"
@@ -255,7 +243,6 @@ def check_court_availability():
         body_text += f"🌐 監視対象URL数: {len(URLS)} 箇所\n\n"
         body_text += "【監視対象URL一覧】\n"
         for url in URLS:
-            # ★定期報告側にも分かりやすいようコート名を並記します
             court_name = COURT_NAMES.get(url, "不明なコート")
             body_text += f"・{court_name}: {url}\n"
             

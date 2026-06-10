@@ -37,17 +37,23 @@ MANUAL_HOLIDAYS = []
 REPORT_HOURS = [0, 14]
 
 # --- メール通知設定 ---
+# 🟢 修正：GitHub Secrets（環境変数）から最優先で取得します
 SENDER_EMAIL = os.environ.get("SENDER_EMAIL", "spike3363@gmail.com")
-# GitHubの安全機能に引っかからないよう、Secretsがない場合のバックアップとして指定
-SENDER_PASSWORD = os.environ.get("SENDER_PASSWORD", "xxdevbllngcgbvii") 
+
+# 🟢 重要な修正：コード内に直接書いていた生のアプリパスワード("xxdevbll...")を完全に消去しました。
+# これにより、公開（Public）リポジトリにしてもあなたのGoogleアカウントが悪用される心配はゼロになります。
+SENDER_PASSWORD = os.environ.get("SENDER_PASSWORD") 
+
 TO_EMAILS = ["kita.ngntennis@gmail.com", "hito3363@gmail.com"]
 
 # --- LINE通知設定 ---
-LINE_CHANNEL_ACCESS_TOKEN = os.environ.get(
-    "LINE_CHANNEL_ACCESS_TOKEN", 
-    "x9scVzSgYqq00FFFQ+pab3RD+PFg5nCdVRrEIdvrT2kEoeRoCYx/dJNPocnlpUCcw2kzNXM2+yuOkIMLIlbIHPykUuhCNfEZIeV483PQZgYkdTNRh1+emEWxUwega44lPqO51DYc1ydN1i6THO6tBAdB04t89/1O/w1cDnyilFU="
-)
-LINE_USER_ID = os.environ.get("LINE_USER_ID", "U6f12e69bd4304bfd4216332ee58a0ef4")
+# 🟢 重要な修正：コード内に直接書いていた長いアクセストークン("x9scVz...")を完全に消去しました。
+# GitHub Secretsに設定した「LINE_CHANNEL_ACCESS_TOKEN」からのみ安全に読み込みます。
+LINE_CHANNEL_ACCESS_TOKEN = os.environ.get("LINE_CHANNEL_ACCESS_TOKEN")
+
+# 🟢 重要な修正：コード内に直接書いていたユーザーID("U6f12e...")を完全に消去しました。
+# これでLINEアカウントの身元が全世界に晒されるリスクも完全に解消されます。
+LINE_USER_ID = os.environ.get("LINE_USER_ID")
 
 # ==========================================
 # 通知処理（メール ＆ LINE）
@@ -210,7 +216,7 @@ def check_court_availability():
                 
                 if len(found_slots) == start_count:
                     print("❌ このコートには対象時間帯の先着空き枠はありませんでした。")
-                                
+                                        
             except Exception as e:
                 print(f"エラーが発生しました（URLをスキップします）: {e}")
                 

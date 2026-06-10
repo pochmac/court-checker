@@ -3,7 +3,7 @@ name: Court Checker Cloud Loop
 on:
   repository_dispatch:
     types: [cloud_trigger]
-
+  workflow_dispatch:      # ←この1行を、ここ（同じ並びの高さ）に追加します！
 jobs:
   check-court:
     runs-on: ubuntu-latest

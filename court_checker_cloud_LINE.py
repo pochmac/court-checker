@@ -228,7 +228,7 @@ def check_court_availability():
 
     if found_slots:
         subject_msg = "【緊急】テニスコート先着空き枠通知"
-        body_text = f"条件に一致する【先着空き枠】が {len(found_slots)} 件見つかりました！\n\n"
+        body_text = f"【先着空き枠】が {len(found_slots)} 件見つかりました！\n\n"
         for idx, slot in enumerate(found_slots, 1):
             body_text += f"【枠 {idx}】\n"
             body_text += f"   🏢 コート: {slot['court']}\n"  

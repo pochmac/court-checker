@@ -282,8 +282,8 @@ def check_court_availability():
             
         broadcast_notifications(subject=subject_msg, body=body_text)
 
-    # パターンB：空き枠はなく、指定時間（REPORT_HOURS）かつ「毎時5分未満（0分〜4分）」の初回起動時のみ実行
-    elif current_hour in REPORT_HOURS and current_minute < 5:
+    # パターンB：空き枠はなく、指定時間（REPORT_HOURS）かつ「毎時10分未満（0分〜10分）」の初回起動時のみ実行
+    elif current_hour in REPORT_HOURS and current_minute < 10:
         print(f"現在、サーバー時間で{current_hour}時{current_minute}分（日本時間{jst_hour}時台）です。定期生存報告を送信します。")
         
         subject_msg = f"【定期報告】テニスコート監視システム稼働中 ({jst_hour}時)"
